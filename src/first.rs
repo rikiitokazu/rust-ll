@@ -41,3 +41,20 @@ impl List {
         res
     }
 }
+
+// Tests  
+// only compiled when cargo test
+#[cfg(test)]
+mod test {
+    use super::List;
+    #[test]
+    fn basics() {
+        let mut list = List::new();
+        assert_eq!(list.pop(), None);
+
+        list.push(1);
+        list.push(2);
+        
+        assert_eq!(list.pop(), Some(2)); 
+    }
+}
