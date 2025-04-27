@@ -42,6 +42,21 @@ impl List {
     }
 }
 
+// Drop trait is built-in rust, but to avoid recursion, we can 
+// impelemtn it ourselves for the List
+// [question] traits vs variants 
+impl Drop for List {
+    fn drop(&mut self) {
+        // mem::replcae returns self.head before replace
+        let mut curr_node = mem::replace(&mut self.head, Link::Empty);
+
+        // while let because we are assigning, not checking equality
+        while let Link::More(mut boxed) = curr_node {
+            curr_node = mem::replace(&mut boxed.next, Link::Empty);
+        }
+    }
+}
+
 // Tests  
 // only compiled when cargo test
 #[cfg(test)]
