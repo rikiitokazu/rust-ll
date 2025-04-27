@@ -4,10 +4,10 @@ pub struct List {
     head: Link,
 }
 
-enum Link {
-    Empty,
-    More(Box<Node>),
-}
+
+// [question] type vs enum
+// Box ensures heap allocation
+type Link = Option<Box<Node>>;
 
 struct Node {
     elem: i32,
@@ -17,28 +17,24 @@ struct Node {
 impl List {
     pub fn new() -> Self{
         // Link :: Empty refers to VARIANT of Link because it is an enum
-        List { head: Link::Empty }
+        List { head: None }
     }
     pub fn push(&mut self, elem: i32) {
         let new_node = Box::new(Node {
             elem: elem,
-            next: mem::replace(&mut self.head, Link::Empty),
+            next: mem::replace(&mut self.head, None),
         });
 
-        self.head = Link::More(new_node);
+        self.head = Some(new_node);
     }
     pub fn pop(&mut self) -> Option<i32> {
-        let res;
-        match mem::replace(&mut self.head, Link:: Empty) {
-            Link::Empty => {
-                res = None
-            }
-            Link::More(node) => {
-                res = Some(node.elem);
+        match mem::replace(&mut self.head, None) {
+            None => None,
+            Some(node) => {
                 self.head = node.next;
+                Some(node.elem)
             }
-        };
-        res
+        }
     }
 }
 
@@ -48,28 +44,12 @@ impl List {
 impl Drop for List {
     fn drop(&mut self) {
         // mem::replcae returns self.head before replace
-        let mut curr_node = mem::replace(&mut self.head, Link::Empty);
+        let mut curr_node = mem::replace(&mut self.head, None);
 
         // while let because we are assigning, not checking equality
-        while let Link::More(mut boxed) = curr_node {
-            curr_node = mem::replace(&mut boxed.next, Link::Empty);
+        while let Some(mut boxed) = curr_node {
+            curr_node = mem::replace(&mut boxed.next, None);
         }
     }
 }
 
-// Tests  
-// only compiled when cargo test
-#[cfg(test)]
-mod test {
-    use super::List;
-    #[test]
-    fn basics() {
-        let mut list = List::new();
-        assert_eq!(list.pop(), None);
-
-        list.push(1);
-        list.push(2);
-        
-        assert_eq!(list.pop(), Some(2)); 
-    }
-}
