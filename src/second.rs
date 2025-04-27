@@ -33,6 +33,13 @@ impl<T> List<T> {
             node.elem
         })
     }
+    // Cannot transfer ownership on a mutable reference
+    // i.e. set a variable equal to a dereferenced mutable reference
+    pub fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|node| {
+            &node.elem
+        })
+    }
 }
 
 // Drop trait is built-in rust, but to avoid recursion, we can 
@@ -50,3 +57,15 @@ impl<T> Drop for List<T> {
     }
 }
 
+#[cfg(test)]
+mod test_ok {
+    use super::List;
+    #[test]
+    fn tests() {
+        let mut list = List::new();
+        assert_eq!(list.peek(), None);
+        list.push(1);
+        assert_eq!(list.peek(), Some(1));
+
+    }
+}
