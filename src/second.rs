@@ -22,13 +22,13 @@ impl List {
     pub fn push(&mut self, elem: i32) {
         let new_node = Box::new(Node {
             elem: elem,
-            next: mem::replace(&mut self.head, None),
+            next: self.head.take(),
         });
 
         self.head = Some(new_node);
     }
     pub fn pop(&mut self) -> Option<i32> {
-        match mem::replace(&mut self.head, None) {
+        match self.head.take() {
             None => None,
             Some(node) => {
                 self.head = node.next;
@@ -48,7 +48,7 @@ impl Drop for List {
 
         // while let because we are assigning, not checking equality
         while let Some(mut boxed) = curr_node {
-            curr_node = mem::replace(&mut boxed.next, None);
+            curr_node = boxed.next.take();
         }
     }
 }
