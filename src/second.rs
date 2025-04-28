@@ -4,6 +4,8 @@ pub struct List<T> {
     head: Link<T>,
 }
 
+pub struct IntoIter<T>(List<T>);
+
 
 // [question] type vs enum
 // Box ensures heap allocation
@@ -40,10 +42,13 @@ impl<T> List<T> {
             &node.elem
         })
     }
+    pub fn into_iter(self) -> IntoIter<T> {
+        IntoIter(self)
+    }
 }
 
-// Drop trait is built-in rust, but to avoid recursion, we can 
-// impelemtn it ourselves for the List
+// Drop trait is built-in rust 
+// implementing to avoid recursive blow up 
 // [question] traits vs variants 
 impl<T> Drop for List<T> {
     fn drop(&mut self) {
@@ -57,6 +62,13 @@ impl<T> Drop for List<T> {
     }
 }
 
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.pop()
+    }
+}
+
 #[cfg(test)]
 mod test_ok {
     use super::List;
@@ -65,7 +77,14 @@ mod test_ok {
         let mut list = List::new();
         assert_eq!(list.peek(), None);
         list.push(1);
-        assert_eq!(list.peek(), Some(1));
+        assert_eq!(list.peek(), Some(&1));
+        list.push(2);
+        
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next(), Some(2)); 
+        assert_eq!(iter.next(), Some(1)); 
+
+
 
     }
 }
